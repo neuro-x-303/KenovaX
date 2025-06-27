@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KenovaX Chat</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #eee;
+      margin: 0; padding: 0;
+      display: flex; flex-direction: column; height: 100vh;
+    }
+    header {
+      background: #222;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.5rem;
+      color: #3af;
+      font-weight: bold;
+    }
+    #chat-box {
+      flex-grow: 1;
+      max-width: 700px;
+      margin: 1rem auto;
+      padding: 1rem;
+      background: #1c1c1c;
+      border-radius: 8px;
+      overflow-y: auto;
+      box-shadow: 0 0 10px #3af44c;
+    }
+    .message {
+      margin-bottom: 1rem;
+      padding: 0.6rem 1rem;
+      border-radius: 20px;
+      max-width: 75%;
+      line-height: 1.4;
+    }
+    .user {
+      background: #3a7efc;
+      align-self: flex-end;
+      color: white;
+      margin-left: auto;
+    }
+    .kenovax {
+      background: #3af44c;
+      color: #111;
+      align-self: flex-start;
+      margin-right: auto;
+    }
+    form {
+      max-width: 700px;
+      margin: 0 auto 1rem;
+      display: flex;
+      gap: 0.5rem;
+      padding: 0 1rem;
+    }
+    input[type="text"] {
+      flex-grow: 1;
+      padding: 0.8rem 1rem;
+      border-radius: 20px;
+      border: none;
+      font-size: 1rem;
+      outline: none;
+    }
+    button {
+      background: #3af;
+      border: none;
+      color: white;
+      font-weight: bold;
+      padding: 0 1.5rem;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: #1583e0;
+    }
+  </style>
+</head>
+<body>
+  <header>KenovaX Chat</header>
+
+  <div id="chat-box"></div>
+
+  <form id="chat-form">
+    <input type="text" id="user-input" placeholder="Type your message..." autocomplete="off" required />
+    <button type="submit">Send</button>
+  </form>
+
+  <script>
+    const chatBox = document.getElementById('chat-box');
+    const chatForm = document.getElementById('chat-form');
+    const userInput = document.getElementById('user-input');
+
+    // Initialize conversation messages with system context
+    let messages = [
+      {
+        role: "system",
+        content: "Your name is KenovaX. You are a highly intelligent, articulate, and friendly female AI assistant created by Srisank Choudhary and the NeuroX team. The NeuroX team works on ANI and AGI development. Always be polite and helpful."
+      }
+    ];
+
+    function appendMessage(text, sender) {
+      const div = document.createElement('div');
+      div.classList.add('message');
+      div.classList.add(sender);
+      div.textContent = text;
+      chatBox.appendChild(div);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    async function sendMessage(message) {
+      // Add user message to messages
+      messages.push({ role: "user", content: message });
+      appendMessage(message, 'user');
+
+      try {
+        const response = await fetch('https://e33281f8-2a2c-44b3-85f4-0148c732c473-00-89a2crcr9tf.sisko.replit.dev/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Error: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const reply = data.reply || "Sorry, I didn't get that.";
+
+        // Add assistant reply to messages and chatbox
+        messages.push({ role: "assistant", content: reply });
+        appendMessage(reply, 'kenovax');
+      } catch (error) {
+        appendMessage("Error: " + error.message, 'kenovax');
+      }
+    }
+
+    chatForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const message = userInput.value.trim();
+      if (!message) return;
+      userInput.value = '';
+      sendMessage(message);
+    });
+  </script>
+</body>
+</html>
